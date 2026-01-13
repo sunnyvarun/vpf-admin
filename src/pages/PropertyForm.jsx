@@ -17,6 +17,7 @@ export default function PropertyForm() {
     title: "",
     priceLakh: "",
     locality: "",
+    nearby_locations: "",
     property_type: "",        
     property_type_slug: "",    
     property_type_id: "",      
@@ -53,6 +54,7 @@ useEffect(() => {
           title: data.title || "",
           priceLakh: data.priceLakh || data.price_lakh || "",
           locality: data.locality || "",
+          nearby_locations: data.nearby_locations || "",
           property_type: data.property_type || data.property_type_name || "",
           property_type_slug: data.property_type_slug || "",
           property_type_id: data.property_type_id || "",
@@ -110,6 +112,7 @@ useEffect(() => {
     fd.append("title", form.title);
     fd.append("price_lakh", form.priceLakh);
     fd.append("locality", form.locality);
+    fd.append("nearby_locations", form.nearby_locations);
     fd.append("property_type", form.property_type);
     fd.append("property_type_slug", form.property_type_slug);
     fd.append("property_type_id", form.property_type_id || "");
@@ -171,6 +174,15 @@ useEffect(() => {
               onChange={handleChange}
               required
             />
+            <Field
+  label="Nearby Locations (comma separated)"
+  name="nearby_locations"
+  value={form.nearby_locations}
+  onChange={handleChange}
+  placeholder="Metro, Airport, ORR, Mall"
+/>
+
+            
             <div>
               <Label>Property Type</Label>
               <select

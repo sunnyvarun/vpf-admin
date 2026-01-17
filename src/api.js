@@ -9,6 +9,8 @@ export async function adminLogin(username, password) {
     body: JSON.stringify({ username, password }),
   });
   const data = await res.json();
+  localStorage.setItem("vpf_admin_token", data.token);
+
   if (!res.ok) throw new Error(data.error || "Login failed");
   return data;
 }
@@ -81,3 +83,22 @@ export async function deleteVideo(id) { return (await api.post('/videos/delete.p
 export async function fetchReviewsAdmin() { return (await api.get('/reviews/list.php?approved_only=0')).data; }
 export async function approveReview(id, approved=1) { return (await api.post('/reviews/approve.php', {id, approved})).data; }
 export async function deleteReview(id) { return (await api.post('/reviews/delete.php', {id})).data; }
+export async function uploadHeroImage(file) {
+  const fd = new FormData();
+  fd.append("image", file);
+
+  const token = localStorage.getItem("vpf_admin_token");
+
+  const res = await fetch(
+    `${API_BASE_URL}/settings/hero-image.php`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: fd,
+    }
+  );
+
+  return res.json();
+}

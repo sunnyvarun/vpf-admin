@@ -18,9 +18,9 @@ export default function PropertyForm() {
     priceLakh: "",
     locality: "",
     nearby_locations: "",
-    property_type: "",        
-    property_type_slug: "",    
-    property_type_id: "",      
+    property_type: "",
+    property_type_slug: "",
+    property_type_id: "",
     facing: "",
     rooms: "",
     plotSize: "",
@@ -31,14 +31,20 @@ export default function PropertyForm() {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [galleryPreview, setGalleryPreview] = useState([]);
+  const [existingGallery, setExistingGallery] = useState([]);
+  const [removedGallery, setRemovedGallery] = useState([]);
+
+
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [types, setTypes] = useState([]);
 
-useEffect(() => {
-  // load types once
-  fetchPropertyTypes().then(setTypes);
-}, []);
+  useEffect(() => {
+    // load types once
+    fetchPropertyTypes().then(setTypes);
+  }, []);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -66,14 +72,27 @@ useEffect(() => {
           availability: data.availability || "",
           status: data.status || "",
         });
+        // Cover image
         if (data.image || data.image_url) {
           setImagePreview(data.image || data.image_url);
+        }
+
+        if (data.gallery_images) {
+          let gallery = [];
+          try {
+            gallery = Array.isArray(data.gallery_images)
+              ? data.gallery_images
+              : JSON.parse(data.gallery_images);
+          } catch {
+            gallery = [];
+          }
+          setExistingGallery(gallery);
         }
       } finally {
         setLoading(false);
       }
     })();
-  }, [isEdit, id, navigate]);
+  }, [id, isEdit, navigate]);
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -84,9 +103,9 @@ useEffect(() => {
     // if option values are slug (string), find matching type
     const selected = types.find(t => String(t.slug) === String(slugOrId) || String(t.id) === String(slugOrId));
     if (selected) {
-      setForm(prev => ({ 
-        ...prev, 
-        property_type_slug: selected.slug, 
+      setForm(prev => ({
+        ...prev,
+        property_type_slug: selected.slug,
         property_type_id: selected.id,
         property_type: selected.name
       }));
@@ -102,6 +121,14 @@ useEffect(() => {
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   }
+  function handleGalleryChange(e) {
+    const files = Array.from(e.target.files || []);
+    console.log("Selected files:", files);
+    setGalleryFiles(files);
+    setGalleryPreview(files.map(f => URL.createObjectURL(f)));
+  }
+
+
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -124,7 +151,16 @@ useEffect(() => {
     fd.append("availability", form.availability);
     fd.append("status", form.status);
 
+
+
     if (imageFile) fd.append("image", imageFile);
+    galleryFiles.forEach((file) => {
+      fd.append("gallery_images[]", file);
+    });
+    removedGallery.forEach(img => {
+      fd.append("removed_gallery[]", img);
+    });
+
 
     const res = await saveProperty(fd);
     setSaving(false);
@@ -175,14 +211,14 @@ useEffect(() => {
               required
             />
             <Field
-  label="Nearby Locations (comma separated)"
-  name="nearby_locations"
-  value={form.nearby_locations}
-  onChange={handleChange}
-  placeholder="Metro, Airport, ORR, Mall"
-/>
+              label="Nearby Locations (comma separated)"
+              name="nearby_locations"
+              value={form.nearby_locations}
+              onChange={handleChange}
+              placeholder="Metro, Airport, ORR, Mall"
+            />
 
-            
+
             <div>
               <Label>Property Type</Label>
               <select
@@ -223,17 +259,17 @@ useEffect(() => {
               onChange={handleChange}
             />
             <Field
-  label="Availability (e.g. Ready to Move, Under Construction)"
-  name="availability"
-  value={form.availability}
-  onChange={handleChange}
-/>
-<Field
-  label="Status (e.g. Premium,Classic,Normal)"
-  name="status"
-  value={form.status}
-  onChange={handleChange}
-/>
+              label="Availability (e.g. Ready to Move, Under Construction)"
+              name="availability"
+              value={form.availability}
+              onChange={handleChange}
+            />
+            <Field
+              label="Status (e.g. Premium,Classic,Normal)"
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+            />
 
           </div>
 
@@ -273,6 +309,72 @@ useEffect(() => {
               a new image while editing, the existing one is kept.
             </p>
           </div>
+          <div className="bg-[#020617] border border-white/10 rounded-2xl p-4">
+            <Label>Gallery Images (Multiple)</Label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleGalleryChange}
+              className="mt-2 text-xs"
+            />
+
+            {/* EXISTING GALLERY IMAGES (EDIT MODE) */}
+            {existingGallery.length > 0 && (
+              <>
+                <p className="text-xs text-white/60 mt-3">Existing gallery images</p>
+
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {existingGallery.map((src, i) => (
+                    <div key={i} className="relative group">
+                      <img
+                        src={src}
+                        className="h-24 w-full object-cover rounded-lg border border-yellow-400/40"
+                      />
+
+                      {/* ❌ REMOVE BUTTON */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRemovedGallery(prev => [...prev, src]);
+                          setExistingGallery(prev => prev.filter(img => img !== src));
+                        }}
+
+                        className="absolute top-1 right-1 bg-black/80 text-white
+                       rounded-full h-6 w-6 text-xs hidden group-hover:flex
+                       items-center justify-center"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* NEWLY SELECTED IMAGES */}
+            {galleryPreview.length > 0 && (
+              <>
+                <p className="text-xs text-white/60 mt-3">New images to be added</p>
+
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {galleryPreview.map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      className="h-24 w-full object-cover rounded-lg border border-white/20"
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+
+            <p className="mt-2 text-[11px] text-white/50">
+              These images will appear in the property gallery carousel.
+            </p>
+          </div>
+
 
           <button
             type="submit"
@@ -284,8 +386,8 @@ useEffect(() => {
                 ? "Saving changes…"
                 : "Creating property…"
               : isEdit
-              ? "Save Changes"
-              : "Create Property"}
+                ? "Save Changes"
+                : "Create Property"}
           </button>
         </div>
       </form>

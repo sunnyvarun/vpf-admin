@@ -142,3 +142,19 @@ export async function uploadHeroImage(file) {
 
   return res.json();
 }
+
+// SELLER LISTINGS (ADMIN)
+export async function fetchSellerListings() {
+  return (await api.get("/listings/list.php")).data;
+}
+
+export async function fetchSellerListingById(id) {
+  return (await api.get("/listings/get.php", { params: { id } })).data;
+}
+export async function approveSellerListing(id) {
+  return (await api.post("/listings/approve.php", { id })).data;
+}
+
+export async function deleteSellerListing(id) {
+  return (await api.post("/listings/delete.php", { id })).data;
+}

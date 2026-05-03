@@ -10,6 +10,8 @@ import PropertyTypesPage from "./pages/PropertyTypesPage.jsx";
 import FeaturedAdmin from "./pages/FeaturedAdmin.jsx";
 import VideoGalleryAdmin from "./pages/VideoGalleryAdmin.jsx";
 import ReviewsAdmin from "./pages/ReviewsAdmin.jsx";
+import SellerListings from "./pages/SellerListings";
+import SellerListingView from "./pages/SellerListingView";
 
 export default function App() {
   return (
@@ -25,6 +27,8 @@ export default function App() {
 <Route path="featured" element={<FeaturedAdmin />} />
   <Route path="videos" element={<VideoGalleryAdmin />} />
   <Route path="reviews" element={<ReviewsAdmin />} />
+  <Route path="/seller-listings" element={<SellerListings />} />
+  <Route path="/seller/:id" element={<SellerListingView />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

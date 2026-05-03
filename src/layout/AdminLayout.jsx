@@ -5,9 +5,10 @@ import { getToken, logout } from "../api";
 const navItems = [
   { label: "Dashboard", path: "/" },
   { label: "Properties", path: "/properties" },
+  { label: "Featured", path: "/featured" },
+  { label: "Seller Listings", path: "/seller-listings" },
   { label: "Site Settings", path: "/settings" },
   { label: "Property Types", path: "/property-types" },
-  { label: "Featured", path: "/featured" },
   { label: "Videos", path: "/videos" },
   { label: "Reviews", path: "/reviews" },
 ];
@@ -76,12 +77,14 @@ export default function AdminLayout() {
     ? "Dashboard"
     : location.pathname.startsWith("/properties")
     ? "Properties"
+    : location.pathname.startsWith("/featured")
+    ? "Featured"
+    : location.pathname.startsWith("/seller-listings")
+    ? "Seller Listings"
     : location.pathname.startsWith("/settings")
     ? "Site Settings"
     : location.pathname.startsWith("/property-types")
     ? "Property Types"
-    : location.pathname.startsWith("/featured")
-    ? "Featured"
     : location.pathname.startsWith("/videos")
     ? "Videos"
     : location.pathname.startsWith("/reviews")
